@@ -3,28 +3,28 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "../ids.hpp"
+#include "../input_struct.hpp"
 
 namespace lsa
 {
 struct Panel
 {
     int maxTrackId;//1
-    ids::LSTrack xTrack;//2
-    ids::LSTrack yTrack;//3
-    ids::LSPanel ls_panel;
+    LSTrack xTrack;//2
+    LSTrack yTrack;//3
+    LSPanel ls_panel;
 
     Panel()
     {}
 
-    Panel(const ids::LSPanel& input_ls_panel)
+    Panel(const LSPanel& input_ls_panel)
     {
         ls_panel = input_ls_panel;
         if (ls_panel.prefer_direction == "H")
         {
             for(int i = 0; i < static_cast<int>(ls_panel.track_list.size()); i++)
             {
-                ids::LSTrack track = ls_panel.track_list[i];
+                LSTrack track = ls_panel.track_list[i];
                 if (track.axis == "Y")
                 {
                     maxTrackId = (track.end - track.start) / track.step_length;
@@ -36,7 +36,7 @@ struct Panel
         {
             for(int i = 0; i < ls_panel.track_list.size(); i++)
             {
-                ids::LSTrack track = ls_panel.track_list[i];
+                LSTrack track = ls_panel.track_list[i];
                 if (track.axis == "X")
                 {
                     maxTrackId = (track.end - track.start) / track.step_length;

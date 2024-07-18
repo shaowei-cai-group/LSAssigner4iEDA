@@ -10,7 +10,7 @@
 #include <vector>
 using namespace std;
 
-bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
+bool parseInputFile(string input_file, std::vector<lsa::LSPanel> &input)
 {
     std::ifstream inputFile(input_file);
     // 文件不存在返回错误
@@ -38,7 +38,7 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
             // 如果是panel，则记录以下信息
             if (current_begin == "panel")
                 {
-                    ids::LSPanel panel;
+                    lsa::LSPanel panel;
                     iss1 >> panel.layer_id >> panel.panel_id >> panel.lb_x >> panel.lb_y >> panel.rt_x >> panel.rt_y >> panel.prefer_direction;
                     input.push_back(panel);
                 }
@@ -54,7 +54,7 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
             // 如果panels非空且currentState为"track_list"
             else if (!input.empty() && currentState == "track_list")
                 {
-                    ids::LSTrack track;
+                    lsa::LSTrack track;
                     std::istringstream iss(line);
                     // 更新track的信息，轴，开始点，每段长度和结束点
                     iss >> track.axis >> track.start >> track.step_length >> track.end;
@@ -65,7 +65,7 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
             // 如果panels非空且currentState为"wire_list"
             else if (!input.empty() && currentState == "wire_list")
                 {
-                    ids::LSShape wire;
+                    lsa::LSShape wire;
                     std::istringstream iss(line);
                     // 获取wire的信息，id，左下x，左下y，右上x，右上y
                     while (iss >> wire.net_id >> wire.lb_x >> wire.lb_y >> wire.rt_x >> wire.rt_y)
@@ -76,7 +76,7 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
             // 如果panels非空且currentState为"soft_shape_list"
             else if (!input.empty() && currentState == "soft_shape_list")
                 {
-                    ids::LSShape shape;
+                    lsa::LSShape shape;
                     std::istringstream iss(line);
                     // 获取shape的信息，net_id，左下x，左下y，右上x，右上y
                     while (iss >> shape.net_id >> shape.lb_x >> shape.lb_y >> shape.rt_x >> shape.rt_y)
@@ -87,7 +87,7 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
             // 如果panels非空且currentState为"hard_shape_list"
             else if (!input.empty() && currentState == "hard_shape_list")
                 {
-                    ids::LSShape shape;
+                    lsa::LSShape shape;
                     std::istringstream iss(line);
                     // 获取shape的信息，net_id，左下x，左下y，右上x，右上y
                     while (iss >> shape.net_id >> shape.lb_x >> shape.lb_y >> shape.rt_x >> shape.rt_y)
@@ -103,14 +103,14 @@ bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
 int main(int argc, char *argv[])
 {
     string input_file = argv[1];
-    std::vector<ids::LSPanel> input;
+    std::vector<lsa::LSPanel> input;
     if (input_file != "")
         {
             if(parseInputFile(input_file, input))
             {
                 lsa::LSAssigner ls_a;
                 string output_file = "";
-                std::vector<ids::LSPanel> output = ls_a.GetResult(input, output_file);
+                std::vector<lsa::LSPanel> output = ls_a.GetResult(input, output_file);
             }
         }
     else

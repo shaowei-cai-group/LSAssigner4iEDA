@@ -23,9 +23,9 @@ namespace lsa
 // 预定义一个宏 用MAXDIST_i 访问 maxCDist[RRPairs[i].first][RRPairs[i].second]
 #define MAXDIST_i maxCDist[RRPairs[i].first][RRPairs[i].second]
 
-std::vector<ids::LSPanel> LSAssigner::GetResult(const std::vector<ids::LSPanel> &input, const std::string temp_directory_path)
+std::vector<LSPanel> LSAssigner::GetResult(const std::vector<LSPanel> &input, const std::string temp_directory_path)
 {
-    std::vector<ids::LSPanel> output(input.size());
+    std::vector<LSPanel> output(input.size());
     panel_infos.resize(input.size());
     omp_set_num_threads(nThreads);
 #pragma omp parallel for
@@ -52,7 +52,7 @@ double PanelInfo::Max2(const double x, const double y)
 }
 
 // 根据panel.prefer_direction判断特定方向上是否有可能重叠
-bool PanelInfo::MayOverlap(const ids::LSShape &rect1, const ids::LSShape &rect2)
+bool PanelInfo::MayOverlap(const LSShape &rect1, const LSShape &rect2)
 {
     double x_overlap = Max2(0, std::min(rect1.rt_x, rect2.rt_x) - std::max(rect1.lb_x, rect2.lb_x));
     double y_overlap = Max2(0, std::min(rect1.rt_y, rect2.rt_y) - std::max(rect1.lb_y, rect2.lb_y));
@@ -64,9 +64,9 @@ bool PanelInfo::MayOverlap(const ids::LSShape &rect1, const ids::LSShape &rect2)
 }
 
 // 返回一个newRect，根据panel.prefer_direction修改wire的各属性值
-ids::LSShape PanelInfo::WireToTrack(const ids::LSShape &wire, const int track_id)
+LSShape PanelInfo::WireToTrack(const LSShape &wire, const int track_id)
 {
-    ids::LSShape newRect = wire;
+    LSShape newRect = wire;
     int trackLine = 0;
     if (input_panel.ls_panel.prefer_direction == "H")
         {
@@ -85,7 +85,7 @@ ids::LSShape PanelInfo::WireToTrack(const ids::LSShape &wire, const int track_id
     return newRect;
 }
 // 计算重叠面积，分别计算x和y方向上的重叠长度再相乘
-double PanelInfo::OverlapArea(const ids::LSShape &rect1, const ids::LSShape &rect2)
+double PanelInfo::OverlapArea(const LSShape &rect1, const LSShape &rect2)
 {
     double x_overlap = Max2(0, std::min(rect1.rt_x, rect2.rt_x) - std::max(rect1.lb_x, rect2.lb_x));
     double y_overlap = Max2(0, std::min(rect1.rt_y, rect2.rt_y) - std::max(rect1.lb_y, rect2.lb_y));
@@ -97,7 +97,7 @@ Point PanelInfo::MiddlePoint(const Point &a, const Point &b)
     return Point{(a.x + b.x) / 2.0, (a.y + b.y) / 2.0};
 }
 // 将Shape类型的对象转变为Rectangle类型的对象
-void PanelInfo::Shape2Rec(const ids::LSShape &shape1, Rectangle &rec1)
+void PanelInfo::Shape2Rec(const LSShape &shape1, Rectangle &rec1)
 {
     rec1.lb.x = shape1.lb_x;
     rec1.lb.y = shape1.lb_y;
@@ -111,7 +111,7 @@ double PanelInfo::Distance(const Point &p1, const Point &p2)
     return abs(p1.x - p2.x) + abs(p1.y - p2.y);
 }
 // 返回s1和s2左下和右上中点之间的曼哈顿距离
-double PanelInfo::RPdistance(const Point &s1, const ids::LSShape &s2)
+double PanelInfo::RPdistance(const Point &s1, const LSShape &s2)
 {
     Rectangle pinRect;
     Shape2Rec(s2, pinRect);
@@ -149,10 +149,10 @@ Cost PanelInfo::ComputeCost()
                                 continue;
 
                             // 如果可能重叠修改r1对应的wire成为tmpR1，在随后的循环中，将r2对应的wire修改为tmpR2
-                            ids::LSShape tmpR1 = WireToTrack(input_panel.ls_panel.wire_list[r1], 0);
+                            LSShape tmpR1 = WireToTrack(input_panel.ls_panel.wire_list[r1], 0);
                             for (int d = 0; d < nTracks; ++d)
                                 {
-                                    ids::LSShape tmpR2 = WireToTrack(input_panel.ls_panel.wire_list[r2], d);
+                                    LSShape tmpR2 = WireToTrack(input_panel.ls_panel.wire_list[r2], d);
                                     // 计算并确定tmpR1和tmpR2是否有重叠区域，并将结果保存到三维数组overlapRR中
                                     mycost.overlapRR[r1][r2][d] = OverlapArea(tmpR1, tmpR2);
                                     if (mycost.overlapRR[r1][r2][d] > 0.00001)
@@ -188,7 +188,7 @@ Cost PanelInfo::ComputeCost()
                     // 如果有可能重叠就计算每种route，track，pin对的重叠面积
                     for (int t = 0; t < nTracks; t++)
                         {
-                            ids::LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
+                            LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
                             overlapRP[r][t][p] = OverlapArea(tmpRoute, input_panel.ls_panel.soft_shape_list[p]);
                         }
                 }
@@ -212,7 +212,7 @@ Cost PanelInfo::ComputeCost()
                     // 如果有可能重叠就计算每种route，track，block对的重叠面积
                     for (int t = 0; t < nTracks; t++)
                         {
-                            ids::LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
+                            LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
                             overlapRB[r][t][b] = OverlapArea(tmpRoute, input_panel.ls_panel.hard_shape_list[b]);
                         }
                 }
@@ -273,7 +273,7 @@ Cost PanelInfo::ComputeCost()
     // 检查相对track和route的相对位置
     for (auto const &[t, r] : assign)
         {
-            ids::LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
+            LSShape tmpRoute = WireToTrack(input_panel.ls_panel.wire_list[r], t);
             if (input_panel.ls_panel.soft_shape_list.size() == 0)
                 {
                     mycost.distPR[t][r] = 0;
@@ -582,7 +582,7 @@ int PanelInfo::TA_panel(const TAParams &api_argu)
     UpdatePanel(trackinfo);
     return 0;
 }
-void ResultOutputFile(const std::string output_file, const std::vector<ids::LSPanel> &output)
+void ResultOutputFile(const std::string output_file, const std::vector<LSPanel> &output)
 {
     std::ofstream outFile(output_file);
     if (outFile.is_open())
@@ -629,7 +629,7 @@ void ResultOutputFile(const std::string output_file, const std::vector<ids::LSPa
     outFile.close();
 }
 // check panel
-bool Evaluator::ValidateSolution(const std::vector<ids::LSPanel> &input)
+bool Evaluator::ValidateSolution(const std::vector<LSPanel> &input)
 {
     //目标：wire按照对应方向平移到了track上
     //平移：坐标的相对位置不变或者绝对位置的变化完全一样
@@ -639,7 +639,7 @@ bool Evaluator::ValidateSolution(const std::vector<ids::LSPanel> &input)
     int input_size = static_cast<int>(input.size());
     for (int i = 0; i < input_size; i++)
         {
-            ids::LSPanel temp_panel = input[i];
+            LSPanel temp_panel = input[i];
             if (input[i].prefer_direction == "H")
                 {
                     for (auto const &track : temp_panel.track_list)
@@ -682,7 +682,7 @@ bool Evaluator::ValidateSolution(const std::vector<ids::LSPanel> &input)
     return true;
 }
 // eval panel
-void Evaluator::EvaluateSolution(const std::vector<ids::LSPanel> &out)
+void Evaluator::EvaluateSolution(const std::vector<LSPanel> &out)
 {
     std::vector<PanelInfo> panel_infos(out.size());
     for (int i = 0; i < out.size(); i++)
@@ -753,7 +753,7 @@ void Evaluator::EvaluateSolution(const std::vector<ids::LSPanel> &out)
     std::cout << "Total costs of wire-pin overlaps: " << total_cost_rp << std::endl;
     std::cout << "Total costs of wire-block overlaps: " << total_cost_rb << std::endl;
 }
-void Evaluator::EvaluateOverallSolution(const std::vector<ids::LSPanel> &input)
+void Evaluator::EvaluateOverallSolution(const std::vector<LSPanel> &input)
 {
     if (ValidateSolution(input))
         {

@@ -6,7 +6,7 @@
 #include<ctime>
 #include"buildmodel/struct.h"
 #include"buildmodel/model.h"
-#include "ids.hpp"
+#include "input_struct.hpp"
 
 namespace lsa
 {
@@ -34,7 +34,7 @@ class PanelInfo
     long long value_result;
 
     PanelInfo() {}
-    PanelInfo(const ids::LSPanel &ls_panel) 
+    PanelInfo(const LSPanel &ls_panel) 
     {
         Panel temp_panel(ls_panel);
         input_panel = temp_panel;
@@ -42,13 +42,13 @@ class PanelInfo
 
     //建模相关函数
     double Max2(const double x, const double y);
-    bool MayOverlap(const ids::LSShape &rect1, const ids::LSShape &rect2);
-    ids::LSShape WireToTrack(const ids::LSShape &wire, const int track_id);
-    double OverlapArea(const ids::LSShape &rect1, const ids::LSShape &rect2);
+    bool MayOverlap(const LSShape &rect1, const LSShape &rect2);
+    LSShape WireToTrack(const LSShape &wire, const int track_id);
+    double OverlapArea(const LSShape &rect1, const LSShape &rect2);
     Point MiddlePoint(const Point &a, const Point &b);
-    void Shape2Rec(const ids::LSShape &shape1,Rectangle &rec1);
+    void Shape2Rec(const LSShape &shape1,Rectangle &rec1);
     double Distance(const Point &p1, const Point &p2);
-    double RPdistance(const Point &s1, const ids::LSShape &s2);
+    double RPdistance(const Point &s1, const LSShape &s2);
     Cost ComputeCost();
     LSModel BuildModel(const TAParams &params);
 
@@ -73,17 +73,17 @@ class LSAssigner
     std::vector<PanelInfo> panel_infos;
     std::string output_file="output_file.txt";
     std::string value_file = "value_file.txt";
-    std::vector<ids::LSPanel> GetResult(const std::vector<ids::LSPanel> &input,const std::string temp_directory_path);
+    std::vector<LSPanel> GetResult(const std::vector<LSPanel> &input,const std::string temp_directory_path);
 };  
 
 class Evaluator
 {
     public:
-    static bool ValidateSolution(const std::vector<ids::LSPanel>& input);
-    static void EvaluateSolution(const std::vector<ids::LSPanel> &input);
-    static void EvaluateOverallSolution(const std::vector<ids::LSPanel> &input);
+    static bool ValidateSolution(const std::vector<LSPanel>& input);
+    static void EvaluateSolution(const std::vector<LSPanel> &input);
+    static void EvaluateOverallSolution(const std::vector<LSPanel> &input);
 };
-void ResultOutputFile(const std::string output_file, const std::vector<ids::LSPanel> &output);
+void ResultOutputFile(const std::string output_file, const std::vector<LSPanel> &output);
 } // namespace lsa
 
 #endif
