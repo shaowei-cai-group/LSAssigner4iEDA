@@ -596,20 +596,12 @@ void local_search(std::vector<int> &init_solution, const char *inputfile, extern
                             if (obj.soft_unsat_weight < obj.opt_unsat_weight)
                                 {
                                     obj.opt_unsat_weight = obj.soft_unsat_weight;
-                                    obj.outputFile << "o " << obj.soft_unsat_weight << std::endl; // << " " << total_step <<
-                                                                                                  // std::endl;
-                                    // cout<< "o " << obj.soft_unsat_weight <<
-                                    // std::endl; obj.outputFile << "0.00/"<<
-                                    // fixed << setprecision(2) << get_runtime()
-                                    // << "\t"
-                                    // << "o " << obj.soft_unsat_weight <<
-                                    // std::endl;
+                                    obj.outputFile << "o " << obj.soft_unsat_weight << std::endl; 
                                     obj.opt_time = get_runtime(obj);
                                     for (int v = 1; v <= obj.num_vars; ++v)
                                         obj.best_soln[v] = obj.cur_soln[v];
                                     if (obj.opt_unsat_weight == 0 || obj.opt_unsat_weight <= obj.best_known)
                                         {
-                                            // cout<<"exit"<<std::endl;
                                             return;
                                         }
                                     obj.max_flips = obj.step + 10000000;
@@ -682,7 +674,6 @@ void check_softunsat_weight(externvariables &obj)
 bool verify_sol(externvariables &obj)
 {
     obj.outputFile << "c start verification" << std::endl;
-    // cout<<"c start verification" << std::endl;
     int c, j, flag;
     long long verify_unsat_weight = 0;
     long long real_min_weight = 0;

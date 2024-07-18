@@ -198,9 +198,6 @@ Solinfo LSModel::Solve(const std::string model_name, const int sol_time, const s
                         {
                             if (sol_temp[i] == 1)
                                 {
-                                    // cout << var_list[i].var_name << " " <<
-                                    // sol_temp[i]
-                                    // <<endl;
                                     solinfo.vars_value.push_back(std::make_pair(var_list[i].var_name, sol_temp[i]));
                                 }
                             else

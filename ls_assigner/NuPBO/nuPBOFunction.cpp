@@ -22,15 +22,6 @@ void interrupt(int sig,
 
 int nuPBOFunction(int argc, char *argv[], std::string outputFileName)
 {
-
-    // const char* fileName = outputFileName.c_str();
-    // // 打开文件进行写入，将标准输出重定向到文件
-    // FILE* fileStream1 = freopen(fileName, "w", stdout);
-    // if (fileStream1 == NULL) {
-    //     cout << "The redirection of standard output to the file has failed."
-    //     << endl;
-    // }
-
     //处理全局变量
     externvariables externVars;
     externVars.outputFile.open(outputFileName);
@@ -67,13 +58,6 @@ int nuPBOFunction(int argc, char *argv[], std::string outputFileName)
     free_memory(externVars);
 
     externVars.outputFile.close();
-    // // 关闭文件并恢复标准输出
-    // fclose(stdout);
-    // FILE* fileStream2 = freopen("/dev/tty", "w", stdout);
-    // if (fileStream1 == NULL) {
-    //     cout << "Failed to close the file and restore standard output." <<
-    //     endl;
-    // }
 
     return 0;
 }

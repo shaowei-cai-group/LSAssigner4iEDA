@@ -25,8 +25,6 @@ namespace lsa
 
 std::vector<ids::LSPanel> LSAssigner::GetResult(const std::vector<ids::LSPanel> &input, const std::string temp_directory_path)
 {
-    std::string input_file_path = temp_directory_path + "input.txt";
-    ResultOutputFile(input_file_path, input);
     std::vector<ids::LSPanel> output(input.size());
     panel_infos.resize(input.size());
     omp_set_num_threads(nThreads);
@@ -43,7 +41,7 @@ std::vector<ids::LSPanel> LSAssigner::GetResult(const std::vector<ids::LSPanel> 
     std::string output_file_path = temp_directory_path + "output.txt";
     ResultOutputFile(output_file_path, output);
     Evaluator::EvaluateOverallSolution(output);
-    std::cout << "hello LSAssigner" << std::endl;
+    std::cout << " Finished Track Assignment of LSAssigner" << std::endl;
     return output;
 }
 
@@ -686,7 +684,6 @@ bool Evaluator::ValidateSolution(const std::vector<ids::LSPanel> &input)
 // eval panel
 void Evaluator::EvaluateSolution(const std::vector<ids::LSPanel> &out)
 {
-    std::cout << "hello" << std::endl;
     std::vector<PanelInfo> panel_infos(out.size());
     for (int i = 0; i < out.size(); i++)
         {
@@ -752,9 +749,9 @@ void Evaluator::EvaluateSolution(const std::vector<ids::LSPanel> &out)
                         }
                 }
         }
-    std::cout << "total_cost_rr: " << total_cost_rr << std::endl;
-    std::cout << "total_cost_rp: " << total_cost_rp << std::endl;
-    std::cout << "total_cost_rb: " << total_cost_rb << std::endl;
+    std::cout << "Total costs of wire overlaps: " << total_cost_rr << std::endl;
+    std::cout << "Total costs of wire-pin overlaps: " << total_cost_rp << std::endl;
+    std::cout << "Total costs of wire-block overlaps: " << total_cost_rb << std::endl;
 }
 void Evaluator::EvaluateOverallSolution(const std::vector<ids::LSPanel> &input)
 {

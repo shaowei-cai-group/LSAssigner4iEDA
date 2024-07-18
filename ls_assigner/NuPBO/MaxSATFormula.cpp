@@ -28,7 +28,6 @@ void MaxSATFormula::build_ins(const char *ifilename, MaxSATFormula &maxsatformul
             ss >> tem_str;
             while (tem_str != ";")
                 {
-                    // cout << tem_str << endl;
                     SoftC tem_sc;
                     bool if_neg = false;
                     std::stringstream ss2;
@@ -89,8 +88,6 @@ void MaxSATFormula::build_ins(const char *ifilename, MaxSATFormula &maxsatformul
 
             HardC tem_hc;
             tem_hc.degree = 0;
-
-            // cout << "befor " << tem_hc.weight << endl;
             std::string tem_str;
 
             ss >> tem_str;

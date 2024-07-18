@@ -43,7 +43,3 @@ all: $(LIBLSAssigner) $(LIBNUPBO)
 clean:
 	rm -f $(OBJS_LSAssigner) $(OBJS_NUPBO) $(LIBLSAssigner) $(LIBNUPBO)
 
-# make
-# g++ -fPIC -g -O3 -std=c++17 -fopenmp -c test.cpp -o test.o
-# g++ -fopenmp -m64 -g -O3 -std=c++17 -o TA main.cpp test.o -L. -llsassigner
-# ./TA ispd18_test5_metal5.input.def.ta.txt  >out.txt
