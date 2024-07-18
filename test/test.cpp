@@ -1,7 +1,8 @@
-#include "ls_assigner/LSAssigner.h"
+#include "../ls_assigner/LSAssigner.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <math.h>
 #include <numeric>
 #include <omp.h>
@@ -9,14 +10,14 @@
 #include <vector>
 using namespace std;
 
-void parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
+bool parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
 {
     std::ifstream inputFile(input_file);
     // 文件不存在返回错误
     if (!inputFile)
         {
             std::cerr << "Failed to open input file: " << input_file << std::endl;
-            return;
+            return false;
         }
 
     std::string line;
@@ -96,23 +97,25 @@ void parseInputFile(string input_file, std::vector<ids::LSPanel> &input)
                 }
         }
     inputFile.close();
+    return true;
 }
 
-int test_panel(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     string input_file = argv[1];
     std::vector<ids::LSPanel> input;
     if (input_file != "")
         {
-            parseInputFile(input_file, input);
-            lsa::LSAssigner ls_a;
-            string output_file = "";
-            std::vector<ids::LSPanel> output = ls_a.GetResult(input, output_file);
-            return 1;
+            if(parseInputFile(input_file, input))
+            {
+                lsa::LSAssigner ls_a;
+                string output_file = "";
+                std::vector<ids::LSPanel> output = ls_a.GetResult(input, output_file);
+            }
         }
     else
         {
-            cout << " No input_file!" << endl;
-            return 0;
+            cout << " Missing necessary parameter:input file" << endl;
         }
+    return 0;
 }

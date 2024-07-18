@@ -41,7 +41,7 @@ std::vector<ids::LSPanel> LSAssigner::GetResult(const std::vector<ids::LSPanel> 
     std::string output_file_path = temp_directory_path + "output.txt";
     ResultOutputFile(output_file_path, output);
     Evaluator::EvaluateOverallSolution(output);
-    std::cout << " Finished Track Assignment of LSAssigner" << std::endl;
+    std::cout << "Finished Track Assignment of LSAssigner" << std::endl;
     return output;
 }
 
