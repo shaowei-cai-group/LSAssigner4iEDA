@@ -20,7 +20,7 @@ g++ -fopenmp -m64 -g -O3 -std=c++17 -o TA main.cpp test.o -L. -llsassigner
 To execute the program, run the following command:
 
 ```bash
-# Run TA with input file ispd18_test5_metal5.input.def.ta.txt and redirect output to out.txt
+# Run TA with input file ispd18_test5_metal5.input.def.ta.txt
 ./TA ispd18_test5_metal5.input.def.ta.txt
 
 ```
