@@ -14,7 +14,7 @@ cd build
 cmake ..
 make -j16
 ```
-The executable file TA is located in the build/test directory.
+The executable file TA is located in the [build/test](./build/test) directory.
 ### Execution
 
 To execute the program, you need to provide the input file as an argument. For example, to run the program with [the example input file](./test/test.txt)

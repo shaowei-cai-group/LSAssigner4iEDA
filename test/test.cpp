@@ -39,7 +39,7 @@ bool parseInputFile(string input_file, std::vector<lsa::LSPanel> &input)
             if (current_begin == "panel")
                 {
                     lsa::LSPanel panel;
-                    iss1 >> panel.layer_id >> panel.panel_id >> panel.lb_x >> panel.lb_y >> panel.rt_x >> panel.rt_y >> panel.prefer_direction;
+                    iss1 >> panel.layer_id >> panel.panel_id >> panel.ll_x >> panel.ll_y >> panel.ur_x >> panel.ur_y >> panel.prefer_direction;
                     input.push_back(panel);
                 }
             // 如果是各种信息列表，则更新currentState
@@ -68,7 +68,7 @@ bool parseInputFile(string input_file, std::vector<lsa::LSPanel> &input)
                     lsa::LSShape wire;
                     std::istringstream iss(line);
                     // 获取wire的信息，id，左下x，左下y，右上x，右上y
-                    while (iss >> wire.net_id >> wire.lb_x >> wire.lb_y >> wire.rt_x >> wire.rt_y)
+                    while (iss >> wire.net_id >> wire.ll_x >> wire.ll_y >> wire.ur_x >> wire.ur_y)
                         {
                             input.back().wire_list.push_back(wire);
                         }
@@ -79,7 +79,7 @@ bool parseInputFile(string input_file, std::vector<lsa::LSPanel> &input)
                     lsa::LSShape shape;
                     std::istringstream iss(line);
                     // 获取shape的信息，net_id，左下x，左下y，右上x，右上y
-                    while (iss >> shape.net_id >> shape.lb_x >> shape.lb_y >> shape.rt_x >> shape.rt_y)
+                    while (iss >> shape.net_id >> shape.ll_x >> shape.ll_y >> shape.ur_x >> shape.ur_y)
                         {
                             input.back().soft_shape_list.push_back(shape);
                         }
@@ -90,7 +90,7 @@ bool parseInputFile(string input_file, std::vector<lsa::LSPanel> &input)
                     lsa::LSShape shape;
                     std::istringstream iss(line);
                     // 获取shape的信息，net_id，左下x，左下y，右上x，右上y
-                    while (iss >> shape.net_id >> shape.lb_x >> shape.lb_y >> shape.rt_x >> shape.rt_y)
+                    while (iss >> shape.net_id >> shape.ll_x >> shape.ll_y >> shape.ur_x >> shape.ur_y)
                         {
                             input.back().hard_shape_list.push_back(shape);
                         }
