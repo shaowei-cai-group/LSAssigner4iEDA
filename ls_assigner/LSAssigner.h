@@ -73,6 +73,7 @@ class LSAssigner
     std::vector<PanelInfo> panel_infos;
     std::string output_file="output_file.txt";
     std::string value_file = "value_file.txt";
+    LSPanel getResult(const LSPanel &input);
     std::vector<LSPanel> GetResult(const std::vector<LSPanel> &input,const std::string temp_directory_path);
 };  
 

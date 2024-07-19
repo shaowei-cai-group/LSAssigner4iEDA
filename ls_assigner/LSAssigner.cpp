@@ -23,6 +23,17 @@ namespace lsa
 // 预定义一个宏 用MAXDIST_i 访问 maxCDist[RRPairs[i].first][RRPairs[i].second]
 #define MAXDIST_i maxCDist[RRPairs[i].first][RRPairs[i].second]
 
+LSPanel LSAssigner::getResult(const LSPanel &input)
+{
+    PanelInfo panel_info(input);
+    panel_info.unique_panel_name = "panel_" + std::to_string(panel_info.input_panel.ls_panel.layer_id) + "_" +
+        std::to_string(panel_info.input_panel.ls_panel.panel_id);
+    panel_info.TA_panel(params);
+    LSPanel output = panel_info.input_panel.ls_panel;
+    // Evaluator::EvaluateOverallSolution({output});
+    return output;
+}
+
 std::vector<LSPanel> LSAssigner::GetResult(const std::vector<LSPanel> &input, const std::string temp_directory_path)
 {
     std::vector<LSPanel> output(input.size());
@@ -54,8 +65,8 @@ double PanelInfo::Max2(const double x, const double y)
 // 根据panel.prefer_direction判断特定方向上是否有可能重叠
 bool PanelInfo::MayOverlap(const LSShape &rect1, const LSShape &rect2)
 {
-    double x_overlap = Max2(0, std::min(rect1.rt_x, rect2.rt_x) - std::max(rect1.lb_x, rect2.lb_x));
-    double y_overlap = Max2(0, std::min(rect1.rt_y, rect2.rt_y) - std::max(rect1.lb_y, rect2.lb_y));
+    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x));
+    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y));
     // 如果panel是水平方向，判断x方向上是否有重叠
     if (input_panel.ls_panel.prefer_direction == "H")
         return x_overlap > 0;
@@ -71,24 +82,24 @@ LSShape PanelInfo::WireToTrack(const LSShape &wire, const int track_id)
     if (input_panel.ls_panel.prefer_direction == "H")
         {
             trackLine = input_panel.yTrack.start + track_id * input_panel.yTrack.step_length;
-            int height = wire.rt_y - wire.lb_y;
-            newRect.lb_y = trackLine - height / 2;
-            newRect.rt_y = trackLine + height / 2;
+            int height = wire.ur_y - wire.ll_y;
+            newRect.ll_y = trackLine - height / 2;
+            newRect.ur_y = trackLine + height / 2;
         }
     else if (input_panel.ls_panel.prefer_direction == "V")
         {
             trackLine = input_panel.xTrack.start + track_id * input_panel.xTrack.step_length;
-            int width = wire.rt_x - wire.lb_x;
-            newRect.lb_x = trackLine - width / 2;
-            newRect.rt_x = trackLine + width / 2;
+            int width = wire.ur_x - wire.ll_x;
+            newRect.ll_x = trackLine - width / 2;
+            newRect.ur_x = trackLine + width / 2;
         }
     return newRect;
 }
 // 计算重叠面积，分别计算x和y方向上的重叠长度再相乘
 double PanelInfo::OverlapArea(const LSShape &rect1, const LSShape &rect2)
 {
-    double x_overlap = Max2(0, std::min(rect1.rt_x, rect2.rt_x) - std::max(rect1.lb_x, rect2.lb_x));
-    double y_overlap = Max2(0, std::min(rect1.rt_y, rect2.rt_y) - std::max(rect1.lb_y, rect2.lb_y));
+    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x));
+    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y));
     return x_overlap * y_overlap;
 }
 // 返回两个点的中点
@@ -99,10 +110,10 @@ Point PanelInfo::MiddlePoint(const Point &a, const Point &b)
 // 将Shape类型的对象转变为Rectangle类型的对象
 void PanelInfo::Shape2Rec(const LSShape &shape1, Rectangle &rec1)
 {
-    rec1.lb.x = shape1.lb_x;
-    rec1.lb.y = shape1.lb_y;
-    rec1.rt.x = shape1.rt_x;
-    rec1.rt.y = shape1.rt_y;
+    rec1.lb.x = shape1.ll_x;
+    rec1.lb.y = shape1.ll_y;
+    rec1.rt.x = shape1.ur_x;
+    rec1.rt.y = shape1.ur_y;
 }
 
 // 计算两点的曼哈顿距离
@@ -285,29 +296,29 @@ Cost PanelInfo::ComputeCost()
             Point lt, lb, rt, rb;
             if (input_panel.ls_panel.prefer_direction == "H")
                 {
-                    lt = {tmpRoute.lb_x, tmpRoute.rt_y};
-                    lb = {tmpRoute.lb_x, tmpRoute.lb_y};
+                    lt = {tmpRoute.ll_x, tmpRoute.ur_y};
+                    lb = {tmpRoute.ll_x, tmpRoute.ll_y};
                     lend = MiddlePoint(lt, lb);
 
-                    rt = {tmpRoute.rt_x, tmpRoute.rt_y};
-                    rb = {tmpRoute.rt_x, tmpRoute.lb_y};
+                    rt = {tmpRoute.ur_x, tmpRoute.ur_y};
+                    rb = {tmpRoute.ur_x, tmpRoute.ll_y};
                     rend = MiddlePoint(rt, rb);
                 }
             else if (input_panel.ls_panel.prefer_direction == "V")
                 {
-                    lt = {tmpRoute.rt_x, tmpRoute.lb_y};
-                    lb = {tmpRoute.lb_x, tmpRoute.lb_y};
+                    lt = {tmpRoute.ur_x, tmpRoute.ll_y};
+                    lb = {tmpRoute.ll_x, tmpRoute.ll_y};
                     lend = MiddlePoint(lt, lb);
 
-                    rt = {tmpRoute.rt_x, tmpRoute.rt_y};
-                    rb = {tmpRoute.lb_x, tmpRoute.rt_y};
+                    rt = {tmpRoute.ur_x, tmpRoute.ur_y};
+                    rb = {tmpRoute.ll_x, tmpRoute.ur_y};
                     rend = MiddlePoint(rt, rb);
                 }
 
             // 计算panel坐标间曼哈顿距离
-            double leftDist = abs(input_panel.ls_panel.rt_x - input_panel.ls_panel.lb_x) + abs(input_panel.ls_panel.rt_y - input_panel.ls_panel.lb_y);
+            double leftDist = abs(input_panel.ls_panel.ur_x - input_panel.ls_panel.ll_x) + abs(input_panel.ls_panel.ur_y - input_panel.ls_panel.ll_y);
             double rightDist =
-                abs(input_panel.ls_panel.rt_x - input_panel.ls_panel.lb_x) + abs(input_panel.ls_panel.rt_y - input_panel.ls_panel.lb_y);
+                abs(input_panel.ls_panel.ur_x - input_panel.ls_panel.ll_x) + abs(input_panel.ls_panel.ur_y - input_panel.ls_panel.ll_y);
             bool existConn = false;
             // 循环检查 net.id是否一致
             for (int p = 0; p < nPins; p++)
@@ -514,9 +525,9 @@ void PanelInfo::UpdatePanel(const Trackinfo &trackinfo)
             for (int i = 0; i < input_panel.ls_panel.wire_list.size(); ++i)
                 {
                     int d = assign_results[index];
-                    int length = input_panel.ls_panel.wire_list[i].lb_x + input_panel.ls_panel.wire_list[i].rt_x;
-                    input_panel.ls_panel.wire_list[i].lb_x = track_begin + track_length * d - length / 2;
-                    input_panel.ls_panel.wire_list[i].rt_x = track_begin + track_length * d + length / 2;
+                    int length = input_panel.ls_panel.wire_list[i].ll_x + input_panel.ls_panel.wire_list[i].ur_x;
+                    input_panel.ls_panel.wire_list[i].ll_x = track_begin + track_length * d - length / 2;
+                    input_panel.ls_panel.wire_list[i].ur_x = track_begin + track_length * d + length / 2;
                     index += 1;
                 }
         }
@@ -525,9 +536,9 @@ void PanelInfo::UpdatePanel(const Trackinfo &trackinfo)
             for (int i = 0; i < input_panel.ls_panel.wire_list.size(); ++i)
                 {
                     int d = assign_results[index];
-                    int length = input_panel.ls_panel.wire_list[i].lb_y + input_panel.ls_panel.wire_list[i].rt_y;
-                    input_panel.ls_panel.wire_list[i].lb_y = track_begin + track_length * d - length / 2;
-                    input_panel.ls_panel.wire_list[i].rt_y = track_begin + track_length * d + length / 2;
+                    int length = input_panel.ls_panel.wire_list[i].ll_y + input_panel.ls_panel.wire_list[i].ur_y;
+                    input_panel.ls_panel.wire_list[i].ll_y = track_begin + track_length * d - length / 2;
+                    input_panel.ls_panel.wire_list[i].ur_y = track_begin + track_length * d + length / 2;
                     index += 1;
                 }
         }
@@ -544,17 +555,17 @@ long long PanelInfo::RandomResult(const Trackinfo &trackinfo, const LSModel &mod
             if (input_panel.ls_panel.prefer_direction == "V")
                 {
                     int d = rand() % (max_d - 1);
-                    int length = input_panel.ls_panel.wire_list[i].lb_x + input_panel.ls_panel.wire_list[i].rt_x;
-                    input_panel.ls_panel.wire_list[i].lb_x = track_begin + track_length * d - length / 2;
-                    input_panel.ls_panel.wire_list[i].rt_x = track_begin + track_length * d + length / 2;
+                    int length = input_panel.ls_panel.wire_list[i].ll_x + input_panel.ls_panel.wire_list[i].ur_x;
+                    input_panel.ls_panel.wire_list[i].ll_x = track_begin + track_length * d - length / 2;
+                    input_panel.ls_panel.wire_list[i].ur_x = track_begin + track_length * d + length / 2;
                     panel_value += model.objective.var_map.at((d * i) + i) / pow(10, model.max_decimals);
                 }
             if (input_panel.ls_panel.prefer_direction == "H")
                 {
                     int d = rand() % (max_d - 1);
-                    int length = input_panel.ls_panel.wire_list[i].lb_y + input_panel.ls_panel.wire_list[i].rt_y;
-                    input_panel.ls_panel.wire_list[i].lb_y = track_begin + track_length * d - length / 2;
-                    input_panel.ls_panel.wire_list[i].rt_y = track_begin + track_length * d + length / 2;
+                    int length = input_panel.ls_panel.wire_list[i].ll_y + input_panel.ls_panel.wire_list[i].ur_y;
+                    input_panel.ls_panel.wire_list[i].ll_y = track_begin + track_length * d - length / 2;
+                    input_panel.ls_panel.wire_list[i].ur_y = track_begin + track_length * d + length / 2;
                     panel_value += model.objective.var_map.at((d * i) + i) / pow(10, model.max_decimals);
                 }
         }
@@ -590,8 +601,8 @@ void ResultOutputFile(const std::string output_file, const std::vector<LSPanel> 
             for (int i = 0; i < output.size(); ++i)
                 {
                     outFile << "panel"
-                            << " " << std::fixed << std::setprecision(0) << output[i].layer_id << " " << output[i].panel_id << " " << output[i].lb_x
-                            << " " << output[i].lb_y << " " << output[i].rt_x << " " << output[i].rt_y << " " << output[i].prefer_direction;
+                            << " " << std::fixed << std::setprecision(0) << output[i].layer_id << " " << output[i].panel_id << " " << output[i].ll_x
+                            << " " << output[i].ll_y << " " << output[i].ur_x << " " << output[i].ur_y << " " << output[i].prefer_direction;
                     outFile << "\n{";
                     outFile << "\ntrack_list\n";
                     for (int j = 0; j < output[i].track_list.size(); ++j)
@@ -602,22 +613,22 @@ void ResultOutputFile(const std::string output_file, const std::vector<LSPanel> 
                     outFile << "wire_list\n";
                     for (int j = 0; j < output[i].wire_list.size(); ++j)
                         {
-                            outFile << output[i].wire_list[j].net_id << " " << output[i].wire_list[j].lb_x << " " << output[i].wire_list[j].lb_y
-                                    << " " << output[i].wire_list[j].rt_x << " " << output[i].wire_list[j].rt_y << "\n";
+                            outFile << output[i].wire_list[j].net_id << " " << output[i].wire_list[j].ll_x << " " << output[i].wire_list[j].ll_y
+                                    << " " << output[i].wire_list[j].ur_x << " " << output[i].wire_list[j].ur_y << "\n";
                         }
                     outFile << "soft_shape_list\n";
                     for (int j = 0; j < output[i].soft_shape_list.size(); ++j)
                         {
-                            outFile << output[i].soft_shape_list[j].net_id << " " << output[i].soft_shape_list[j].lb_x << " "
-                                    << output[i].soft_shape_list[j].lb_y << " " << output[i].soft_shape_list[j].rt_x << " "
-                                    << output[i].soft_shape_list[j].rt_y << "\n";
+                            outFile << output[i].soft_shape_list[j].net_id << " " << output[i].soft_shape_list[j].ll_x << " "
+                                    << output[i].soft_shape_list[j].ll_y << " " << output[i].soft_shape_list[j].ur_x << " "
+                                    << output[i].soft_shape_list[j].ur_y << "\n";
                         }
                     outFile << "hard_shape_list\n";
                     for (int j = 0; j < output[i].hard_shape_list.size(); ++j)
                         {
-                            outFile << output[i].hard_shape_list[j].net_id << " " << output[i].hard_shape_list[j].lb_x << " "
-                                    << output[i].hard_shape_list[j].lb_y << " " << output[i].hard_shape_list[j].rt_x << " "
-                                    << output[i].hard_shape_list[j].rt_y << "\n";
+                            outFile << output[i].hard_shape_list[j].net_id << " " << output[i].hard_shape_list[j].ll_x << " "
+                                    << output[i].hard_shape_list[j].ll_y << " " << output[i].hard_shape_list[j].ur_x << " "
+                                    << output[i].hard_shape_list[j].ur_y << "\n";
                         }
                     outFile << "}\n";
                 }
@@ -648,7 +659,7 @@ bool Evaluator::ValidateSolution(const std::vector<LSPanel> &input)
                                 {
                                     for (auto const &wire : temp_panel.wire_list)
                                         {
-                                            double wire_center = (wire.lb_y + wire.rt_y) / 2;
+                                            double wire_center = (wire.ll_y + wire.ur_y) / 2;
                                             if (wire_center < track.start || wire_center > track.end ||
                                                 static_cast<int>(wire_center - track.start) % track.step_length != 0)
                                                 {
@@ -667,7 +678,7 @@ bool Evaluator::ValidateSolution(const std::vector<LSPanel> &input)
                                 {
                                     for (auto const &wire : temp_panel.wire_list)
                                         {
-                                            double wire_center = (wire.lb_x + wire.rt_x) / 2;
+                                            double wire_center = (wire.ll_x + wire.ur_x) / 2;
                                             if (wire_center < track.start || wire_center > track.end ||
                                                 static_cast<int>(wire_center - track.start) % track.step_length != 0)
                                                 {
@@ -712,8 +723,8 @@ void Evaluator::EvaluateSolution(const std::vector<LSPanel> &out)
                     int track_length = panel_infos[i].input_panel.xTrack.step_length;
                     for (int r = 0; r < nRoutes; ++r)
                         {
-                            int cur_lb = panel_infos[i].input_panel.ls_panel.wire_list[r].lb_x;
-                            int cur_rt = panel_infos[i].input_panel.ls_panel.wire_list[r].rt_x;
+                            int cur_lb = panel_infos[i].input_panel.ls_panel.wire_list[r].ll_x;
+                            int cur_rt = panel_infos[i].input_panel.ls_panel.wire_list[r].ur_x;
                             int mid = (cur_lb + cur_rt) / 2;
                             int d = (mid - track_start) / track_length;
                             assign[r] = d;
@@ -725,8 +736,8 @@ void Evaluator::EvaluateSolution(const std::vector<LSPanel> &out)
                     int track_length = panel_infos[i].input_panel.yTrack.step_length;
                     for (int r = 0; r < nRoutes; ++r)
                         {
-                            int cur_lb = panel_infos[i].input_panel.ls_panel.wire_list[r].lb_y;
-                            int cur_rt = panel_infos[i].input_panel.ls_panel.wire_list[r].rt_y;
+                            int cur_lb = panel_infos[i].input_panel.ls_panel.wire_list[r].ll_y;
+                            int cur_rt = panel_infos[i].input_panel.ls_panel.wire_list[r].ur_y;
                             int mid = (cur_lb + cur_rt) / 2;
                             int d = (mid - track_start) / track_length;
                             assign[r] = d;
