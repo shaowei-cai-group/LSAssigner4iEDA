@@ -71,13 +71,13 @@ We compare the performance of LSAssigner with the original iEDA algorithm on the
 
 | 样例           | ispd18_test1 | ispd18_test3 |
 | -------------- | ------------ | ------------ |
-| **panels数量**  | 384          | 1829         |
+| **The number of panels**  | 384          | 1829         |
 | **LSAssigner** |              |              |
 | Total costs of wire overlaps | 9            | 189          |
 | Total costs of wire-pin overlaps  |  68           | 955          |
 | Total costs of wire-block overlaps  |  0            | 5            |
 | Total costs     |  77           | 1149         |
-| **原有iEDA算法**|              |              |
+| **Original iEDA**|              |              |
 | Total costs of wire overlaps |  0            | 3            |
 | Total costs of wire-pin overlaps  | 198          | 1941         |
 | Total costs of wire-block overlaps  | 15367        | 177897       |
