@@ -65,9 +65,7 @@ We use the following metrics to evaluate the performance of a Solver.
 
 ### Example
 
-We provide two example input files in the test directory. The first example is ispd18_test1.txt, which has 384 panels and 10000 wires. The second example is ispd18_test3.txt, which has 1829 panels and 10000 wires.
-
-We compare the performance of LSAssigner with the original iEDA algorithm on these two examples. The results are shown in the following table:
+We provide two example input files from the iSPD 2018 track assignment challenge. We compare the performance of LSAssigner with the original iEDA algorithm on these two examples. The results are shown in the following table:
 
 |            | ispd18_test1 | ispd18_test3 |
 | -------------- | ------------ | ------------ |
