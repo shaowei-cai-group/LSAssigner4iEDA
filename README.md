@@ -69,7 +69,7 @@ We provide two example input files in the test directory. The first example is i
 
 We compare the performance of LSAssigner with the original iEDA algorithm on these two examples. The results are shown in the following table:
 
-| 样例           | ispd18_test1 | ispd18_test3 |
+|            | ispd18_test1 | ispd18_test3 |
 | -------------- | ------------ | ------------ |
 | **The number of panels**  | 384          | 1829         |
 | **LSAssigner** |              |              |
