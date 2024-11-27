@@ -22,9 +22,13 @@ namespace lsa
 {
 // 预定义一个宏 用MAXDIST_i 访问 maxCDist[RRPairs[i].first][RRPairs[i].second]
 #define MAXDIST_i maxCDist[RRPairs[i].first][RRPairs[i].second]
+#define LS_EPS 1e-6
+
 
 LSPanel LSAssigner::getResult(const LSPanel &input)
 {
+
+    // std::cout << "Starting LSAssigner in Panel:" << input.layer_id << "," << input.panel_id << " #hardshape=" << input.hard_shape_list.size() << std::endl; 
     PanelInfo panel_info(input);
     panel_info.unique_panel_name = "panel_" + std::to_string(panel_info.input_panel.ls_panel.layer_id) + "_" +
         std::to_string(panel_info.input_panel.ls_panel.panel_id);
@@ -65,13 +69,13 @@ double PanelInfo::Max2(const double x, const double y)
 // 根据panel.prefer_direction判断特定方向上是否有可能重叠
 bool PanelInfo::MayOverlap(const LSShape &rect1, const LSShape &rect2)
 {
-    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x));
-    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y));
+    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x)+0.1);
+    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y)+0.1);
     // 如果panel是水平方向，判断x方向上是否有重叠
     if (input_panel.ls_panel.prefer_direction == "H")
-        return x_overlap > 0;
+        return x_overlap > LS_EPS;
     else
-        return y_overlap > 0;
+        return y_overlap > LS_EPS;
 }
 
 // 返回一个newRect，根据panel.prefer_direction修改wire的各属性值
@@ -98,8 +102,8 @@ LSShape PanelInfo::WireToTrack(const LSShape &wire, const int track_id)
 // 计算重叠面积，分别计算x和y方向上的重叠长度再相乘
 double PanelInfo::OverlapArea(const LSShape &rect1, const LSShape &rect2)
 {
-    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x));
-    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y));
+    double x_overlap = Max2(0, std::min(rect1.ur_x, rect2.ur_x) - std::max(rect1.ll_x, rect2.ll_x)+0.1);
+    double y_overlap = Max2(0, std::min(rect1.ur_y, rect2.ur_y) - std::max(rect1.ll_y, rect2.ll_y)+0.1);
     return x_overlap * y_overlap;
 }
 // 返回两个点的中点
@@ -166,7 +170,7 @@ Cost PanelInfo::ComputeCost()
                                     LSShape tmpR2 = WireToTrack(input_panel.ls_panel.wire_list[r2], d);
                                     // 计算并确定tmpR1和tmpR2是否有重叠区域，并将结果保存到三维数组overlapRR中
                                     mycost.overlapRR[r1][r2][d] = OverlapArea(tmpR1, tmpR2);
-                                    if (mycost.overlapRR[r1][r2][d] > 0.00001)
+                                    if (mycost.overlapRR[r1][r2][d] > LS_EPS)
                                         {
                                             mycost.overlapRR[r1][r2][d] = 1;
                                         }
@@ -262,7 +266,7 @@ Cost PanelInfo::ComputeCost()
         {
             for (int b = 0; b < nBlocks; b++)
                 {
-                    if (overlapRB[r][t][b] > 0.00001)
+                    if (overlapRB[r][t][b] > LS_EPS)
                         {
                             mycost.blockCost[t][r] += 1;
                         }
@@ -272,7 +276,7 @@ Cost PanelInfo::ComputeCost()
                 {
                     if (input_panel.ls_panel.soft_shape_list[p].net_id != input_panel.ls_panel.wire_list[r].net_id)
                         {
-                            if (overlapRP[r][t][p] > 0.00001)
+                            if (overlapRP[r][t][p] > LS_EPS)
                                 {
                                     mycost.pinCost[t][r] += 1;
                                 }
@@ -386,7 +390,10 @@ LSModel PanelInfo::BuildModel(const TAParams &params)
                 }
         }
 
-    std::vector<std::vector<LSVar>> z;
+    
+    
+    std::vector<std::vector<LSVar>> z(mycost.RRPairs.size(), std::vector<LSVar>(nTracks+1));
+
     for (int i = 0; i < mycost.RRPairs.size(); ++i)
         {
             std::vector<LSVar> z_i;
@@ -402,10 +409,10 @@ LSModel PanelInfo::BuildModel(const TAParams &params)
                     //     int decimals = obj_str.size() - point - 1;
                     //     max_decimals = std::max(max_decimals, decimals);
                     // }
-                    LSVar z_i_d = model.AddVar(var_name, obj_constant);
-                    z_i.push_back(z_i_d);
+                    z[i][d] = model.AddVar(var_name, obj_constant);
+                    
+                    obj_var_list.push_back(std::make_pair(z[i][d], obj_constant));
                 }
-            z.push_back(z_i);
         }
 
     // model.max_decimals = max_decimals;
@@ -590,6 +597,7 @@ int PanelInfo::TA_panel(const TAParams &api_argu)
             // value_result = solinfo.model_value;
             value_result = RandomResult(trackinfo, model);
         }
+        // std::cout << "LSAssigner obj = " << value_result << std::endl; 
     UpdatePanel(trackinfo);
     return 0;
 }
